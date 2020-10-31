@@ -34,6 +34,10 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Persisters\Entity\BasicEntityPersister;
 use Doctrine\ORM\Persisters\Entity\EntityPersister;
 use SimpleThings\EntityAudit\AuditManager;
+use SimpleThings\EntityAudit\Event\RevisionUpdatedEvent;
+use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use SimpleThings\EntityAudit\Events as AuditEvents;
 
 class LogRevisionsListener implements EventSubscriber
 {
@@ -88,10 +92,13 @@ class LogRevisionsListener implements EventSubscriber
      */
     private $extraUpdates = array();
 
-    public function __construct(AuditManager $auditManager)
+    private $dispatcher;
+
+    public function __construct(AuditManager $auditManager, EventDispatcherInterface $dispatcher)
     {
         $this->config = $auditManager->getConfiguration();
         $this->metadataFactory = $auditManager->getMetadataFactory();
+        $this->dispatcher = $dispatcher;
     }
 
     public function getSubscribedEvents()
@@ -195,8 +202,10 @@ class LogRevisionsListener implements EventSubscriber
 
                     $sql .= 'AND ' . $columnName . ' = ?';
                 }
-
                 $this->em->getConnection()->executeQuery($sql, $params, $types);
+
+                $event = new RevisionUpdatedEvent($this->getRevisionId(), $entity);
+                $this->dispatcher->dispatch(AuditEvents::REVISION_UPDATED, $event);
             }
         }
     }

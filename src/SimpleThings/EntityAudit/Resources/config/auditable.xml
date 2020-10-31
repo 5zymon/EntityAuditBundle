@@ -31,6 +31,7 @@
 
         <service id="simplethings_entityaudit.log_revisions_listener" class="SimpleThings\EntityAudit\EventListener\LogRevisionsListener">
             <argument id="simplethings_entityaudit.manager" type="service" />
+            <argument id="event_dispatcher" type="service" />
             <tag name="doctrine.event_subscriber" connection="default" />
         </service>
 
