@@ -203,10 +203,11 @@ class LogRevisionsListener implements EventSubscriber
                     $sql .= 'AND ' . $columnName . ' = ?';
                 }
                 $this->em->getConnection()->executeQuery($sql, $params, $types);
-
-                $event = new RevisionUpdatedEvent($this->getRevisionId(), $entity);
-                $this->dispatcher->dispatch(AuditEvents::REVISION_UPDATED, $event);
+                $revisionUpdated = true;
             }
+
+            $event = new RevisionUpdatedEvent($this->getRevisionId(), $entity);
+            $this->dispatcher->dispatch(AuditEvents::REVISION_UPDATED, $event);
         }
     }
 
