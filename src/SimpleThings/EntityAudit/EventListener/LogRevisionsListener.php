@@ -118,6 +118,7 @@ class LogRevisionsListener implements EventSubscriber
         $em = $eventArgs->getEntityManager();
         $quoteStrategy = $em->getConfiguration()->getQuoteStrategy();
         $uow = $em->getUnitOfWork();
+        $revisionUpdated = false;
 
         foreach ($this->extraUpdates as $entity) {
             $className = get_class($entity);
@@ -206,8 +207,10 @@ class LogRevisionsListener implements EventSubscriber
                 $revisionUpdated = true;
             }
 
-            $event = new RevisionUpdatedEvent($this->getRevisionId(), $entity);
-            $this->dispatcher->dispatch(AuditEvents::REVISION_UPDATED, $event);
+            if ($revisionUpdated) {
+                $event = new RevisionUpdatedEvent($this->getRevisionId(), $entity);
+                $this->dispatcher->dispatch(AuditEvents::REVISION_UPDATED, $event);
+            }
         }
     }
 
@@ -534,6 +537,13 @@ class LogRevisionsListener implements EventSubscriber
 
         foreach ($uow->getEntityChangeSet($entity) as $field => $change) {
             if (isset($versionField) && $versionField == $field) {
+                continue;
+            }
+
+            if ($change[0] instanceof \DateTimeInterface
+                && $change[1] instanceof \DateTimeInterface
+                && $change[0]->getTimestamp() === $change[1]->getTimestamp()
+            ) {
                 continue;
             }
 
