@@ -13,7 +13,12 @@ class RevisionUpdatedEvent extends Event
 
     private $entity;
 
-    public function __construct(int $revisionId, object $entity)
+    /**
+     * RevisionUpdatedEvent constructor.
+     * @param int $revisionId
+     * @param object $entity
+     */
+    public function __construct(int $revisionId, $entity)
     {
         $this->revisionId = $revisionId;
         $this->entity = $entity;
@@ -24,7 +29,7 @@ class RevisionUpdatedEvent extends Event
         return $this->revisionId;
     }
 
-    public function getEntity(): object
+    public function getEntity()
     {
         return $this->entity;
     }
